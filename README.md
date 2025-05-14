@@ -141,7 +141,7 @@ This project was initially developed as part of a space systems software design 
 For feedback, ideas, or collaboration opportunities:
 
 * 📧 \danishaffan678@gmail.com
-* 🔗 \[[Your LinkedIn Profile]](https://www.linkedin.com/in/affan-danish-08a144353/)
+* 🔗 \https://www.linkedin.com/in/affan-danish-08a144353/
 
 ---
 
