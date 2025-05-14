@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Station Cargo Management System</title>
+    <!-- Linking the local CSS file in the same directory -->
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- Optional external CSS links -->
+    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+
+    <!-- Optional external JS libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <style>
+        body {
+            min-height: 100vh;
+            background-color: #212529;
+            color: #f8f9fa;
+        }
+        
+        .container-3d {
+            height: 500px;
+            width: 100%;
+            position: relative;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .tab-content {
+            padding-top: 20px;
+        }
+
+        .priority-high {
+            color: #dc3545;
+        }
+        
+        .priority-medium {
+            color: #ffc107;
+        }
+        
+        .priority-low {
+            color: #198754;
+        }
+
+        .btn-toolbar {
+            margin-bottom: 15px;
+        }
+
+        .space-station-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .space-station-header h1 {
+            margin-left: 15px;
+            margin-bottom: 0;
+        }
+
+        .space-station-logo {
+            width: 60px;
+            height: 60px;
+        }
+        
+        .dashboard {
+            display: flex;
+            height: 100vh;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .sidebar {
+            width: 220px;
+            background-color: #343a40;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            color: #f8f9fa;
+        }
+
+        .sidebar button {
+            padding: 12px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            background-color: #495057;
+            color: #f8f9fa;
+            border: none;
+            border-radius: 4px;
+            text-align: left;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        .sidebar button:hover {
+            background-color: #6c757d;
+        }
+        
+        .sidebar button.active {
+            background-color: #0dcaf0;
+            color: #212529;
+            font-weight: bold;
+        }
+
+        .main {
+            flex: 1;
+            padding: 20px;
+            background-color: #212529;
+            overflow-y: auto;
+        }
+
+        .status-bar {
+            background-color: #343a40;
+            padding: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            border-radius: 4px;
+            font-weight: bold;
+            color: #f8f9fa;
+        }
+
+        .alert {
+            color: #dc3545;
+        }
+
+        .upload-section {
+            background-color: rgba(33, 37, 41, 0.5);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #495057;
+        }
+
+        .upload-section h4 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #f8f9fa;
+        }
+
+        .upload-instructions {
+            font-size: 14px;
+            color: #adb5bd;
+            margin-top: 10px;
+        }
+
+        .container-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .container-item {
+            padding: 15px;
+            border: 1px solid #495057;
+            text-align: center;
+            border-radius: 4px;
+            background-color: #343a40;
+            transition: transform 0.2s;
+            cursor: pointer;
+            color: #f8f9fa;
+        }
+
+        .container-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .utilization-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            color: #f8f9fa;
+        }
+
+        .bar-container {
+            flex-grow: 1;
+            height: 20px;
+            background-color: #495057;
+            border-radius: 10px;
+            margin: 0 10px;
+            overflow: hidden;
+        }
+
+        .bar {
+            height: 100%;
+            border-radius: 10px;
+        }
+        
+        .status-card {
+            background-color: #343a40;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #495057;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="sidebar">
+            <h4 class="text-center mb-4">ISS Cargo Manager</h4>
+            <button id="homeBtn" class="active">🏠 Home</button>
+            <button id="containersBtn">🗄️ Containers</button>
+            <button id="itemsBtn">📦 Items</button>
+            <button id="searchBtn">🔍 Search</button>
+            <button id="wasteBtn">♻️ Waste</button>
+            <button id="simulationBtn">⏱️ Simulation</button>
+            <button id="logsBtn">📝 Logs</button>
+            <button id="threeDBtn">🔄 3D View</button>
+        </div>
+
+        <div class="main">
+            <div class="status-bar">
+                <div>Space Station Cargo Management System</div>
+                <div id="current-date">Date: <span id="currentDateDisplay"></span></div>
+            </div>
+
+            <div id="tab-content">
+                <!-- Home Dashboard Tab -->
+                <div id="home-tab" class="tab-content">
+                    <h2>Space Station Cargo Dashboard</h2>
+                    
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    System Status
+                                </div>
+                                <div class="card-body">
+                                    <div class="status-card p-3 mb-3">
+                                        <h5>🛰️ Current Status</h5>
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span>Current Date:</span>
+                                            <span id="homeDateDisplay" class="badge bg-info">Loading...</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span>Total Items:</span>
+                                            <span id="totalItemsCount" class="badge bg-primary">0</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span>Waste Items Pending:</span>
+                                            <span id="wasteItemsCount" class="badge bg-warning">0</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="alert alert-info">
+                                        Welcome to the ISS Cargo Management System. Use the menu on the left to navigate.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    Quick Actions
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-grid gap-2">
+                                        <button id="quickPlacementBtn" class="btn btn-outline-primary mb-2">Calculate Placements</button>
+                                        <button id="quickSearchBtn" class="btn btn-outline-info mb-2">Search Items</button>
+                                        <button id="quickWasteBtn" class="btn btn-outline-warning mb-2">Manage Waste</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    Container Utilization
+                                </div>
+                                <div class="card-body">
+                                    <div id="containerUtilizationChart">
+                                        <p class="text-muted">Container utilization statistics will appear here</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    Recent Activities
+                                </div>
+                                <div class="card-body">
+                                    <div id="recentActivities">
+                                        <p class="text-muted">Recent system activities will appear here</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Container Management Tab -->
+                <div id="container-tab" class="tab-content">
+                    <h2>Container Management</h2>
+                    
+                    <!-- Container utilization status card removed as requested -->
+
+                    <div class="upload-section">
+                        <h4>Import Containers</h4>
+                        <div class="mb-3">
+                            <label for="containerFileInput" class="form-label">Select CSV file with container data</label>
+                            <input class="form-control" type="file" id="containerFileInput" accept=".csv">
+                        </div>
+                        <button id="importContainersBtn" class="btn btn-primary">Import Containers</button>
+                        <div class="upload-instructions">
+                            <p>CSV Format: zone,container_id,width_cm,depth_cm,height_cm</p>
+                            <p>Example: Sanitation_Bay,SB01,25.0,42.5,200.0</p>
+                        </div>
+                    </div>
+
+                    <div class="container-grid" id="containerGrid">
+                        <!-- Will be populated dynamically -->
+                    </div>
+                </div>
+                
+                <!-- Item Management Tab -->
+                <div id="items-tab" class="tab-content" style="display: none;">
+                    <h2>Item Management</h2>
+                    
+                    <div class="upload-section">
+                        <h4>Import Items</h4>
+                        <div class="mb-3">
+                            <label for="itemFileInput" class="form-label">Select CSV file with item data</label>
+                            <input class="form-control" type="file" id="itemFileInput" accept=".csv">
+                        </div>
+                        <button id="importItemsBtn" class="btn btn-primary">Import Items</button>
+                        <div class="upload-instructions">
+                            <p>CSV Format: item_id,name,width_cm,depth_cm,height_cm,mass_kg,priority,expiry_date,usage_limit,preferred_zone</p>
+                            <p>Example: 000001,Research_Samples,26.8,17.5,19.4,2.4,84,N/A,2304,Storage_Bay</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 mb-3">
+                        <button id="calculatePlacementBtn" class="btn btn-success">Calculate Optimal Placement</button>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Priority</th>
+                                    <th>Dimensions</th>
+                                    <th>Mass</th>
+                                    <th>Expiry</th>
+                                    <th>Zone</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="itemsTableBody">
+                                <!-- Will be populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Search & Retrieval Tab -->
+                <div id="search-tab" class="tab-content" style="display: none;">
+                    <h2>Search & Retrieval</h2>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <input type="text" id="searchInput" class="form-control" placeholder="Search by item ID or name">
+                                <button id="searchItemBtn" class="btn btn-primary">Search</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-5">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    Search Results
+                                </div>
+                                <div class="card-body">
+                                    <div class="list-group" id="searchResults">
+                                        <p class="text-muted">Enter search terms above</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-7">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    Item Location
+                                </div>
+                                <div class="card-body p-0">
+                                    <div id="itemLocationViewer" class="container-3d">
+                                        <!-- 3D visualization will be rendered here -->
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    Retrieval Steps
+                                </div>
+                                <div class="card-body">
+                                    <div id="retrievalSteps">
+                                        <p class="text-muted">Find an item to see retrieval steps</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Waste Management Tab -->
+                <div id="waste-tab" class="tab-content" style="display: none;">
+                    <h2>Waste Management</h2>
+                    
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <button id="identifyWasteBtn" class="btn btn-warning">Identify Waste Items</button>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    Waste Items
+                                </div>
+                                <div class="card-body">
+                                    <div id="wasteList">
+                                        <p class="text-muted">Click "Identify Waste Items" to find expired or depleted items</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    Waste Statistics
+                                </div>
+                                <div class="card-body">
+                                    <div id="wasteStats">
+                                        <p class="text-muted">No waste statistics available</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    Return Steps
+                                </div>
+                                <div class="card-body">
+                                    <div id="wasteReturnSteps">
+                                        <p class="text-muted">No waste return steps generated</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Simulation Tab -->
+                <div id="simulation-tab" class="tab-content" style="display: none;">
+                    <h2>Time Simulation</h2>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <input type="number" id="daysInput" class="form-control" value="1" min="1">
+                                <span class="input-group-text">days</span>
+                                <button id="simulateDaysBtn" class="btn btn-info">Simulate Time Passage</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    Current Date
+                                </div>
+                                <div class="card-body">
+                                    <div id="currentDate" class="d-flex align-items-center">
+                                        <h3 class="mb-0" id="currentDateValue">Loading...</h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    Simulation Results
+                                </div>
+                                <div class="card-body">
+                                    <div id="simulationResults">
+                                        <p class="text-muted">Simulate time to see results</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Logs Tab -->
+                <div id="logs-tab" class="tab-content" style="display: none;">
+                    <h2>System Logs</h2>
+                    
+                    <div class="card mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <div>System Activity Log</div>
+                            <div>
+                                <button id="refreshLogsBtn" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-arrow-clockwise"></i> Refresh
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+                                <table class="table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Timestamp</th>
+                                            <th>User</th>
+                                            <th>Action</th>
+                                            <th>Item ID</th>
+                                            <th>Details</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="logsTableBody">
+                                        <tr>
+                                            <td colspan="5" class="text-center">
+                                                <div class="spinner-border text-primary" role="status">
+                                                    <span class="visually-hidden">Loading...</span>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            Log Filters
+                        </div>
+                        <div class="card-body">
+                            <form id="logFilterForm">
+                                <div class="row g-3">
+                                    <div class="col-md-3">
+                                        <label for="startDateFilter" class="form-label">Start Date</label>
+                                        <input type="date" class="form-control" id="startDateFilter">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="endDateFilter" class="form-label">End Date</label>
+                                        <input type="date" class="form-control" id="endDateFilter">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="actionTypeFilter" class="form-label">Action Type</label>
+                                        <select class="form-select" id="actionTypeFilter">
+                                            <option value="">All Actions</option>
+                                            <option value="placement">Placement</option>
+                                            <option value="retrieval">Retrieval</option>
+                                            <option value="search">Search</option>
+                                            <option value="simulation">Simulation</option>
+                                            <option value="waste_management">Waste Management</option>
+                                            <option value="import">Import</option>
+                                            <option value="export">Export</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="itemIdFilter" class="form-label">Item ID</label>
+                                        <input type="text" class="form-control" id="itemIdFilter" placeholder="Optional">
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <button type="submit" class="btn btn-primary">Apply Filters</button>
+                                    <button type="reset" class="btn btn-outline-secondary">Reset</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 3D View Tab -->
+                <div id="threeD-tab" class="tab-content" style="display: none;">
+                    <h2>3D Warehouse Visualization</h2>
+                    
+                    <div class="alert alert-info">
+                        <h5>Space Station Container Coordinate System</h5>
+                        <p>Each container has its own coordinate system where:</p>
+                        <ul>
+                            <li><strong>Origin (0,0,0):</strong> Bottom left corner of the open face</li>
+                            <li><strong>Width:</strong> Runs horizontally along the open face</li>
+                            <li><strong>Depth:</strong> Runs perpendicular to the open face, into the container</li>
+                            <li><strong>Height:</strong> Runs vertically along the open face</li>
+                        </ul>
+                        <p>Containers are displayed with appropriate spacing for better visualization.</p>
+                    </div>
+                    
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            3D Visualization
+                        </div>
+                        <div class="card-body p-0">
+                            <div id="threeDViewer" class="container-3d">
+                                <!-- 3D visualization will be rendered here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import the ISSContainerViewer.js -->
+    <script src="ISSContainerViewer.js"></script>
+    <!-- Main application JS -->
+    <script src="main.js"></script>
+</body>
+</html>

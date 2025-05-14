@@ -1,0 +1,418 @@
+/* Cargo Management System Styles */
+
+body {
+    min-height: 100vh;
+    background-color: #212529;
+    color: #f8f9fa;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* 3D Visualization Styles */
+.container-3d {
+    position: relative;
+    height: 500px;
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.tab-content {
+    padding-top: 20px;
+}
+
+/* Priority classes */
+.priority-high {
+    color: #dc3545;
+}
+
+.priority-medium {
+    color: #ffc107;
+}
+
+.priority-low {
+    color: #198754;
+}
+
+.btn-toolbar {
+    margin-bottom: 15px;
+}
+
+/* Dashboard Layout */
+.dashboard {
+    display: flex;
+    height: 100vh;
+}
+
+.sidebar {
+    width: 220px;
+    background-color: #343a40;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    color: #f8f9fa;
+}
+
+.sidebar button {
+    padding: 12px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    background-color: #495057;
+    color: #f8f9fa;
+    border: none;
+    border-radius: 4px;
+    text-align: left;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+.sidebar button:hover {
+    background-color: #6c757d;
+}
+
+.sidebar button.active {
+    border-left: 4px solid var(--bs-info);
+    background-color: #0dcaf0;
+    color: #212529;
+    font-weight: bold;
+}
+
+.main {
+    flex: 1;
+    padding: 20px;
+    background-color: #212529;
+    overflow-y: auto;
+}
+
+/* Card hover effects */
+.container-item {
+    transition: transform 0.2s, box-shadow 0.2s;
+    padding: 15px;
+    border: 1px solid #495057;
+    text-align: center;
+    border-radius: 4px;
+    background-color: #343a40;
+    cursor: pointer;
+    color: #f8f9fa;
+}
+
+.container-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2), 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Status and Utilization Styles */
+.status-bar {
+    background-color: #343a40;
+    padding: 12px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+.utilization-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.bar-container {
+    flex-grow: 1;
+    height: 20px;
+    background-color: #495057;
+    border-radius: 10px;
+    margin: 0 10px;
+    overflow: hidden;
+}
+
+.bar {
+    height: 100%;
+    border-radius: 10px;
+}
+
+.status-card {
+    background-color: #343a40;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border: 1px solid #495057;
+}
+
+/* Header Styles */
+.space-station-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.space-station-header h1 {
+    margin-left: 15px;
+    margin-bottom: 0;
+}
+
+.space-station-logo {
+    width: 60px;
+    height: 60px;
+}
+
+/* Upload Section */
+.upload-section {
+    background-color: rgba(33, 37, 41, 0.5);
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border: 1px solid #495057;
+}
+
+.upload-section h4 {
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+.upload-instructions {
+    font-size: 14px;
+    color: #adb5bd;
+    margin-top: 10px;
+}
+
+/* Container Grid */
+.container-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+/* Existing styles below - maintained with original functionality */
+
+/* Toast container */
+.toast-container {
+    z-index: 9999;
+}
+
+/* Alert icons */
+.alert-icon {
+    margin-right: 8px;
+}
+
+/* Item details modal */
+.item-details-modal .modal-body {
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+/* Log filters */
+.log-filters {
+    background-color: rgba(0, 0, 0, 0.05);
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+/* Animation for loading */
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.6; }
+    100% { opacity: 1; }
+}
+
+.loading {
+    animation: pulse 1.5s infinite;
+}
+
+/* Table striping for dark theme */
+.table-striped > tbody > tr:nth-of-type(odd) {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Form elements */
+.form-control, .form-select {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #f8f9fa;
+}
+
+.form-control:focus, .form-select:focus {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-color: var(--bs-info);
+    color: #f8f9fa;
+}
+
+/* Card styling */
+.card {
+    border-color: rgba(255, 255, 255, 0.1);
+    background-color: #2b3035;
+}
+
+.card-header {
+    background-color: rgba(0, 0, 0, 0.3);
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+    font-weight: 500;
+}
+
+/* Progress bars */
+.progress {
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+/* Carousel indicators */
+.carousel-indicators button {
+    background-color: var(--bs-info);
+}
+
+/* Status badges */
+.status-badge {
+    padding: 6px 10px;
+    border-radius: 12px;
+    display: inline-block;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.status-badge.expired {
+    background-color: rgba(220, 53, 69, 0.2);
+    color: var(--bs-danger);
+    border: 1px solid var(--bs-danger);
+}
+
+.status-badge.warning {
+    background-color: rgba(255, 193, 7, 0.2);
+    color: var(--bs-warning);
+    border: 1px solid var(--bs-warning);
+}
+
+.status-badge.normal {
+    background-color: rgba(25, 135, 84, 0.2);
+    color: var(--bs-success);
+    border: 1px solid var(--bs-success);
+}
+
+/* Waste management specific styles */
+.waste-item-card {
+    border-left: 4px solid var(--bs-warning);
+}
+
+.return-item-card {
+    border-left: 4px solid var(--bs-info);
+}
+
+/* Container utilization bar */
+.utilization-bar {
+    height: 10px;
+    border-radius: 5px;
+    background-color: var(--bs-dark);
+    margin: 5px 0;
+}
+
+.utilization-bar .fill {
+    height: 100%;
+    border-radius: 5px;
+    background-color: var(--bs-info);
+}
+
+/* Steps list */
+.steps-list {
+    counter-reset: step;
+    padding-left: 0;
+}
+
+.steps-list li {
+    position: relative;
+    list-style-type: none;
+    padding-left: 35px;
+    margin-bottom: 15px;
+}
+
+.steps-list li:before {
+    content: counter(step);
+    counter-increment: step;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 25px;
+    height: 25px;
+    line-height: 25px;
+    background-color: var(--bs-info);
+    color: white;
+    border-radius: 50%;
+    text-align: center;
+    font-weight: 600;
+}
+
+/* Container and item details */
+.details-section {
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.details-label {
+    color: var(--bs-info);
+    font-weight: 500;
+    margin-bottom: 5px;
+}
+
+.details-value {
+    font-weight: 400;
+    margin-bottom: 15px;
+}
+
+/* Custom switch - for visibility toggles */
+.custom-switch {
+    padding-left: 2.5em;
+}
+
+.custom-switch .custom-control-label::before {
+    width: 2em;
+    height: 1em;
+    border-radius: 1em;
+}
+
+.custom-switch .custom-control-label::after {
+    width: calc(1em - 4px);
+    height: calc(1em - 4px);
+    border-radius: 50%;
+}
+
+.custom-switch .custom-control-input:checked ~ .custom-control-label::after {
+    transform: translateX(1em);
+}
+
+/* Responsive tables */
+@media screen and (max-width: 768px) {
+    .table-responsive-cards {
+        border: 0;
+    }
+    
+    .table-responsive-cards thead {
+        display: none;
+    }
+    
+    .table-responsive-cards tr {
+        display: block;
+        margin-bottom: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 5px;
+        background-color: rgba(0, 0, 0, 0.2);
+        padding: 10px;
+    }
+    
+    .table-responsive-cards td {
+        display: block;
+        text-align: right;
+        border: none;
+        position: relative;
+        padding-left: 50%;
+    }
+    
+    .table-responsive-cards td:before {
+        content: attr(data-label);
+        position: absolute;
+        left: 10px;
+        font-weight: 600;
+        text-align: left;
+    }
+}
