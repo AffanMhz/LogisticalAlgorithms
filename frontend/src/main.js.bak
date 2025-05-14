@@ -1,0 +1,706 @@
+// main.js - Space Station Cargo Management System
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Initialize application
+    initApplication();
+});
+
+// Global variables
+let containersData = [];
+let itemsData = [];
+let containerViewer = null;
+
+// API endpoint base URL
+const API_BASE_URL = '/api';
+
+async function initApplication() {
+    setupEventListeners();
+    await loadContainers();
+    await loadItems();
+    initVisualization();
+    updateStats();
+}
+
+function setupEventListeners() {
+    // Sidebar navigation buttons
+    document.getElementById('homeBtn').addEventListener('click', function() {
+        showTab('home-tab');
+        setActiveButton(this);
+    });
+    
+    document.getElementById('containersBtn').addEventListener('click', function() {
+        showTab('container-tab');
+        setActiveButton(this);
+    });
+    
+    document.getElementById('itemsBtn').addEventListener('click', function() {
+        showTab('items-tab');
+        setActiveButton(this);
+    });
+    
+    document.getElementById('searchBtn').addEventListener('click', function() {
+        showTab('search-tab');
+        setActiveButton(this);
+    });
+    
+    document.getElementById('wasteBtn').addEventListener('click', function() {
+        showTab('waste-tab');
+        setActiveButton(this);
+    });
+    
+    document.getElementById('simulationBtn').addEventListener('click', function() {
+        showTab('simulation-tab');
+        setActiveButton(this);
+    });
+    
+    document.getElementById('logsBtn').addEventListener('click', function() {
+        showTab('logs-tab');
+        setActiveButton(this);
+        loadLogs(); // Load logs when tab is selected
+    });
+    
+    document.getElementById('threeDBtn').addEventListener('click', function() {
+        showTab('threeD-tab');
+        setActiveButton(this);
+        if (containerViewer) {
+            containerViewer.handleResize(); // Ensure 3D view is properly sized
+        }
+    });
+    
+    // Quick action buttons on home tab
+    document.getElementById('quickPlacementBtn')?.addEventListener('click', function() {
+        document.getElementById('itemsBtn').click();
+        // Scroll to placement section
+        setTimeout(() => {
+            document.getElementById('calculatePlacementBtn')?.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+    });
+    
+    document.getElementById('quickSearchBtn')?.addEventListener('click', function() {
+        document.getElementById('searchBtn').click();
+    });
+    
+    document.getElementById('quickWasteBtn')?.addEventListener('click', function() {
+        document.getElementById('wasteBtn').click();
+    });
+    
+    // Search functionality
+    document.getElementById('searchItemBtn')?.addEventListener('click', handleSearchSubmit);
+    document.getElementById('searchInput')?.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            handleSearchSubmit();
+        }
+    });
+    
+    // Calculate placement button
+    document.getElementById('calculatePlacementBtn')?.addEventListener('click', handlePlacementCalculation);
+    
+    // Import buttons
+    document.getElementById('importContainersBtn')?.addEventListener('click', handleImportContainers);
+    document.getElementById('importItemsBtn')?.addEventListener('click', handleImportItems);
+}
+
+// Helper function to show a specific tab
+function showTab(tabId) {
+    // Hide all tabs
+    document.querySelectorAll('[id$="-tab"]').forEach(tab => {
+        tab.style.display = 'none';
+    });
+    
+    // Show the selected tab
+    const selectedTab = document.getElementById(tabId);
+    if (selectedTab) {
+        selectedTab.style.display = 'block';
+    }
+}
+
+// Helper function to set active button in sidebar
+function setActiveButton(button) {
+    // Remove active class from all buttons
+    document.querySelectorAll('.sidebar button').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Add active class to the clicked button
+    button.classList.add('active');
+}
+
+async function loadContainers() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/containers`);
+        if (!response.ok) {
+            throw new Error('Failed to load containers');
+        }
+        containersData = await response.json();
+        updateContainersList();
+    } catch (error) {
+        console.error('Error loading containers:', error);
+        showAlert('error', 'Failed to load containers. Please try again later.');
+    }
+}
+
+async function loadItems() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/items`);
+        if (!response.ok) {
+            throw new Error('Failed to load items');
+        }
+        itemsData = await response.json();
+        updateItemsList();
+    } catch (error) {
+        console.error('Error loading items:', error);
+        showAlert('error', 'Failed to load items. Please try again later.');
+    }
+}
+
+function updateContainersList() {
+    const containersList = document.getElementById('containers-list');
+    const containerSelect = document.querySelectorAll('.container-select');
+    
+    if (containersList) {
+        containersList.innerHTML = '';
+        containersData.forEach(container => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${container.containerId}</td>
+                <td>${container.zone}</td>
+                <td>${container.width.toFixed(1)} cm</td>
+                <td>${container.depth.toFixed(1)} cm</td>
+                <td>${container.height.toFixed(1)} cm</td>
+                <td>${(container.width * container.depth * container.height / 1000).toFixed(2)} L</td>
+                <td>${(container.occupiedSpace || 0).toFixed(2)} L</td>
+                <td>${container.items ? container.items.length : 0}</td>
+            `;
+            containersList.appendChild(row);
+        });
+    }
+
+    // Update container select dropdowns
+    containerSelect.forEach(select => {
+        select.innerHTML = '<option value="">Select Container</option>';
+        containersData.forEach(container => {
+            const option = document.createElement('option');
+            option.value = container.containerId;
+            option.textContent = `${container.containerId} (${container.zone})`;
+            select.appendChild(option);
+        });
+    });
+}
+
+function updateItemsList() {
+    const itemsList = document.getElementById('items-list');
+    const itemSelect = document.querySelectorAll('.item-select');
+    
+    if (itemsList) {
+        itemsList.innerHTML = '';
+        itemsData.forEach(item => {
+            const row = document.createElement('tr');
+            const isExpired = item.isWaste || (item.expiryDate !== 'N/A' && new Date(item.expiryDate) < new Date());
+            row.innerHTML = `
+                <td>${item.itemId}</td>
+                <td>${item.name}</td>
+                <td>${item.width.toFixed(1)} × ${item.depth.toFixed(1)} × ${item.height.toFixed(1)} cm</td>
+                <td>${item.mass.toFixed(2)} kg</td>
+                <td>${item.priority}</td>
+                <td>${item.expiryDate}</td>
+                <td>${item.usageLimit}</td>
+                <td>${item.preferredZone}</td>
+                <td>${isExpired ? '<span class="badge bg-danger">Yes</span>' : '<span class="badge bg-success">No</span>'}</td>
+                <td>${item.currentLocation ? item.currentLocation.containerId : 'Not Placed'}</td>
+            `;
+            itemsList.appendChild(row);
+        });
+    }
+
+    // Update item select dropdowns
+    itemSelect.forEach(select => {
+        select.innerHTML = '<option value="">Select Item</option>';
+        itemsData.forEach(item => {
+            const option = document.createElement('option');
+            option.value = item.itemId;
+            option.textContent = `${item.itemId} - ${item.name}`;
+            select.appendChild(option);
+        });
+    });
+}
+
+function initVisualization() {
+    const visualizationContainer = document.getElementById('visualization-container');
+    if (visualizationContainer && containersData.length > 0) {
+        // Initialize the 3D container viewer
+        containerViewer = new ISSContainerViewer(visualizationContainer, containersData);
+        
+        // Update with any placed items
+        const placedItems = itemsData.filter(item => item.currentLocation);
+        if (placedItems.length > 0) {
+            containerViewer.updateItems(placedItems);
+        }
+    }
+}
+
+async function handlePlacementSubmit(e) {
+    e.preventDefault();
+    
+    const selectedItems = Array.from(document.querySelector('#placement-items').selectedOptions).map(option => option.value);
+    
+    if (selectedItems.length === 0) {
+        showAlert('warning', 'Please select at least one item to place');
+        return;
+    }
+    
+    const itemsToPlace = itemsData.filter(item => selectedItems.includes(item.itemId));
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/placement/recommend`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                items: itemsToPlace,
+                containers: containersData
+            }),
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to calculate placement');
+        }
+        
+        const result = await response.json();
+        displayPlacementResults(result);
+        
+        // Refresh data after placement
+        await loadContainers();
+        await loadItems();
+        
+        // Update visualization
+        if (containerViewer) {
+            containerViewer.updateItems(itemsData.filter(item => item.currentLocation));
+        }
+        
+    } catch (error) {
+        console.error('Error during placement calculation:', error);
+        showAlert('error', 'Failed to calculate placement. Please try again later.');
+    }
+}
+
+function displayPlacementResults(result) {
+    const resultsContainer = document.getElementById('placement-results');
+    
+    let html = '<h4>Placement Results</h4>';
+    
+    if (result.placements.length === 0) {
+        html += '<div class="alert alert-warning">No suitable placements found.</div>';
+    } else {
+        html += '<table class="table table-striped"><thead><tr><th>Item ID</th><th>Container</th><th>Position</th></tr></thead><tbody>';
+        
+        result.placements.forEach(placement => {
+            html += `
+                <tr>
+                    <td>${placement.itemId}</td>
+                    <td>${placement.containerId}</td>
+                    <td>(${placement.position[0].toFixed(1)}, ${placement.position[1].toFixed(1)}, ${placement.position[2].toFixed(1)})</td>
+                </tr>
+            `;
+        });
+        
+        html += '</tbody></table>';
+    }
+    
+    if (result.rearrangements.length > 0) {
+        html += '<h5>Rearrangements Required</h5>';
+        html += '<table class="table table-striped"><thead><tr><th>Step</th><th>Action</th><th>Item</th><th>Details</th></tr></thead><tbody>';
+        
+        result.rearrangements.forEach(step => {
+            let details = '';
+            if (step.action === 'move') {
+                details = `From ${step.fromContainer} to ${step.toContainer}`;
+            } else if (step.action === 'remove') {
+                details = `From ${step.fromContainer}`;
+            } else if (step.action === 'place') {
+                details = `To ${step.toContainer}`;
+            }
+            
+            html += `
+                <tr>
+                    <td>${step.step}</td>
+                    <td>${step.action}</td>
+                    <td>${step.itemId}</td>
+                    <td>${details}</td>
+                </tr>
+            `;
+        });
+        
+        html += '</tbody></table>';
+    }
+    
+    resultsContainer.innerHTML = html;
+}
+
+async function handleRetrievalSubmit(e) {
+    e.preventDefault();
+    
+    const itemId = document.getElementById('retrieval-item').value;
+    const itemName = document.getElementById('retrieval-item-name').value;
+    
+    if (!itemId && !itemName) {
+        showAlert('warning', 'Please specify either an item ID or name to retrieve');
+        return;
+    }
+    
+    try {
+        const params = new URLSearchParams();
+        if (itemId) params.append('itemId', itemId);
+        if (itemName) params.append('itemName', itemName);
+        
+        const response = await fetch(`${API_BASE_URL}/items/search?${params.toString()}`);
+        
+        if (!response.ok) {
+            throw new Error('Failed to search for item');
+        }
+        
+        const result = await response.json();
+        displayRetrievalResults(result);
+        
+    } catch (error) {
+        console.error('Error during item retrieval:', error);
+        showAlert('error', 'Failed to retrieve item. Please try again later.');
+    }
+}
+
+function displayRetrievalResults(result) {
+    const resultsContainer = document.getElementById('retrieval-results');
+    
+    let html = '<h4>Item Location Results</h4>';
+    
+    if (!result || result.length === 0) {
+        html += '<div class="alert alert-warning">No items found matching the criteria.</div>';
+    } else {
+        html += '<table class="table table-striped"><thead><tr><th>Item ID</th><th>Name</th><th>Container</th><th>Position</th><th>Steps to Retrieve</th></tr></thead><tbody>';
+        
+        result.forEach(item => {
+            html += `
+                <tr>
+                    <td>${item.itemId}</td>
+                    <td>${item.name}</td>
+                    <td>${item.containerId}</td>
+                    <td>(${item.position[0].toFixed(1)}, ${item.position[1].toFixed(1)}, ${item.position[2].toFixed(1)})</td>
+                    <td>${item.retrievalSteps}</td>
+                </tr>
+            `;
+            
+            if (item.blockedBy && item.blockedBy.length > 0) {
+                html += `<tr><td colspan="5"><strong>Blocked by:</strong> `;
+                item.blockedBy.forEach((blockingItem, index) => {
+                    html += `${blockingItem.itemId} (${blockingItem.name})`;
+                    if (index < item.blockedBy.length - 1) {
+                        html += ', ';
+                    }
+                });
+                html += '</td></tr>';
+            }
+        });
+        
+        html += '</tbody></table>';
+    }
+    
+    resultsContainer.innerHTML = html;
+}
+
+async function handleSimulationSubmit(e) {
+    e.preventDefault();
+    
+    const days = parseInt(document.getElementById('simulation-days').value, 10);
+    
+    if (isNaN(days) || days <= 0) {
+        showAlert('warning', 'Please enter a valid number of days');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/simulate/day`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                days: days
+            }),
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to simulate time passage');
+        }
+        
+        const result = await response.json();
+        displaySimulationResults(result, days);
+        
+        // Refresh data after simulation
+        await loadContainers();
+        await loadItems();
+        
+    } catch (error) {
+        console.error('Error during time simulation:', error);
+        showAlert('error', 'Failed to simulate time passage. Please try again later.');
+    }
+}
+
+function displaySimulationResults(result, days) {
+    const resultsContainer = document.getElementById('simulation-results');
+    
+    let html = `<h4>Simulation Results (${days} days)</h4>`;
+    
+    html += `<p>New date: <strong>${result.newDate}</strong></p>`;
+    
+    if (result.wasteItems && result.wasteItems.length > 0) {
+        html += '<h5>New Waste Items</h5>';
+        html += '<table class="table table-striped"><thead><tr><th>Item ID</th><th>Name</th><th>Reason</th><th>Location</th></tr></thead><tbody>';
+        
+        result.wasteItems.forEach(item => {
+            html += `
+                <tr>
+                    <td>${item.itemId}</td>
+                    <td>${item.name}</td>
+                    <td>${item.reason}</td>
+                    <td>${item.containerId || 'Not stored'}</td>
+                </tr>
+            `;
+        });
+        
+        html += '</tbody></table>';
+    } else {
+        html += '<p>No new waste items generated during this period.</p>';
+    }
+    
+    resultsContainer.innerHTML = html;
+}
+
+async function handleWasteSubmit(e) {
+    e.preventDefault();
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/waste/identify`);
+        
+        if (!response.ok) {
+            throw new Error('Failed to identify waste');
+        }
+        
+        const result = await response.json();
+        displayWasteResults(result);
+        
+    } catch (error) {
+        console.error('Error identifying waste:', error);
+        showAlert('error', 'Failed to identify waste. Please try again later.');
+    }
+}
+
+function displayWasteResults(result) {
+    const resultsContainer = document.getElementById('waste-results');
+    
+    let html = '<h4>Waste Management Results</h4>';
+    
+    if (!result.wasteItems || result.wasteItems.length === 0) {
+        html += '<div class="alert alert-success">No waste items identified.</div>';
+    } else {
+        html += '<h5>Identified Waste Items</h5>';
+        html += '<table class="table table-striped"><thead><tr><th>Item ID</th><th>Name</th><th>Reason</th><th>Location</th><th>Mass</th></tr></thead><tbody>';
+        
+        result.wasteItems.forEach(item => {
+            html += `
+                <tr>
+                    <td>${item.itemId}</td>
+                    <td>${item.name}</td>
+                    <td>${item.reason}</td>
+                    <td>${item.containerId || 'Not stored'}</td>
+                    <td>${item.mass.toFixed(2)} kg</td>
+                </tr>
+            `;
+        });
+        
+        html += '</tbody></table>';
+        html += `<p>Total waste mass: <strong>${result.totalMass.toFixed(2)} kg</strong></p>`;
+    }
+    
+    if (result.returnSteps && result.returnSteps.length > 0) {
+        html += '<h5>Waste Return Procedure</h5>';
+        html += '<table class="table table-striped"><thead><tr><th>Step</th><th>Action</th><th>Item</th><th>Details</th></tr></thead><tbody>';
+        
+        result.returnSteps.forEach(step => {
+            let details = '';
+            if (step.action === 'move') {
+                details = `From ${step.fromContainer} to ${step.toContainer}`;
+            } else if (step.action === 'remove') {
+                details = `From ${step.fromContainer}`;
+            } else if (step.action === 'place') {
+                details = `To ${step.toContainer}`;
+            }
+            
+            html += `
+                <tr>
+                    <td>${step.step}</td>
+                    <td>${step.action}</td>
+                    <td>${step.itemId}</td>
+                    <td>${details}</td>
+                </tr>
+            `;
+        });
+        
+        html += '</tbody></table>';
+    }
+    
+    resultsContainer.innerHTML = html;
+}
+
+async function handleImportItems(e) {
+    e.preventDefault();
+    
+    const fileInput = document.getElementById('items-file');
+    if (!fileInput.files || fileInput.files.length === 0) {
+        showAlert('warning', 'Please select a file to import');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/items/import`, {
+            method: 'POST',
+            body: formData,
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to import items');
+        }
+        
+        const result = await response.json();
+        showAlert('success', `Successfully imported ${result.count} items`);
+        
+        // Refresh items list
+        await loadItems();
+        
+    } catch (error) {
+        console.error('Error importing items:', error);
+        showAlert('error', 'Failed to import items. Please try again later.');
+    }
+}
+
+async function handleImportContainers(e) {
+    e.preventDefault();
+    
+    const fileInput = document.getElementById('containers-file');
+    if (!fileInput.files || fileInput.files.length === 0) {
+        showAlert('warning', 'Please select a file to import');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/containers/import`, {
+            method: 'POST',
+            body: formData,
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to import containers');
+        }
+        
+        const result = await response.json();
+        showAlert('success', `Successfully imported ${result.count} containers`);
+        
+        // Refresh containers list
+        await loadContainers();
+        
+        // Reinitialize visualization
+        initVisualization();
+        
+    } catch (error) {
+        console.error('Error importing containers:', error);
+        showAlert('error', 'Failed to import containers. Please try again later.');
+    }
+}
+
+function updateStats() {
+    const statsContainer = document.getElementById('stats-container');
+    if (!statsContainer) return;
+    
+    const totalContainers = containersData.length;
+    const totalItems = itemsData.length;
+    const placedItems = itemsData.filter(item => item.currentLocation).length;
+    const wasteItems = itemsData.filter(item => item.isWaste).length;
+    
+    statsContainer.innerHTML = `
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">System Overview</h5>
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="stat-item">
+                            <span class="stat-value">${totalContainers}</span>
+                            <span class="stat-label">Containers</span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-item">
+                            <span class="stat-value">${totalItems}</span>
+                            <span class="stat-label">Total Items</span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-item">
+                            <span class="stat-value">${placedItems}</span>
+                            <span class="stat-label">Placed Items</span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-item">
+                            <span class="stat-value">${wasteItems}</span>
+                            <span class="stat-label">Waste Items</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function showAlert(type, message) {
+    const alertContainer = document.getElementById('alert-container');
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.role = 'alert';
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+    
+    alertContainer.appendChild(alertDiv);
+    
+    // Auto dismiss after 5 seconds
+    setTimeout(() => {
+        alertDiv.classList.remove('show');
+        setTimeout(() => {
+            alertContainer.removeChild(alertDiv);
+        }, 150);
+    }, 5000);
+}
+
+// Helper function to add logs
+async function addLog(action, details) {
+    try {
+        await fetch(`${API_BASE_URL}/logs/add`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                action,
+                details
+            }),
+        });
+    } catch (error) {
+        console.error('Error adding log:', error);
+    }
+}
