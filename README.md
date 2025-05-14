@@ -1,60 +1,88 @@
-# 🚀 Spacecraft Inventory Manager
+# 🚀 LogisticalAlgorithms - Spacecraft Inventory Manager
 
-An intelligent inventory and storage management system designed for spacecrafts and space missions. This application helps you manage containers and items, auto-place them efficiently based on space constraints, and prioritize critical resources — all through an intuitive interface and smart backend logic.
+## Overview
+
+LogisticalAlgorithms is an advanced, intelligent inventory and storage management system designed specifically for spacecraft and space missions. This sophisticated application offers efficient management of containers and items, optimizing their placement for better space utilization, accessibility, and longevity. Leveraging a highly efficient auto-placement algorithm and continuously improving spatial optimization techniques, this system ensures that critical resources are prioritized, maintained, and easily accessible.
 
 ---
 
-## 🧠 What It Does
+## 🧠 Key Functionalities
 
-- 📦 **Manages Containers**: Create and manage containers with defined 3D dimensions.
-- 📋 **Manages Items**: Upload items with properties like dimensions, priority, expiry date, usage limits, and preferred zones.
-- 🤖 **Auto-Placement Algorithm**: Automatically fits items into the best possible container, optimizing for space, accessibility, and long-term utility.
-- 📊 **Interactive UI**: A React frontend to upload CSVs, view placement results, and explore containers and their contents.
-- 🔁 **Smart Replacements**: Keeps track of item expiry and usage limits for dynamic updates.
+* **Dynamic Container Management**: Define, create, and manage containers with specific 3D dimensions.
+* **Comprehensive Item Management**:
+
+  * Upload items with detailed properties, including:
+
+    * `ID`, `Name`
+    * `Width`, `Depth`, `Height` (rotatable for better fit)
+    * `Priority (0–100)`
+    * `Expiry Date`, `Usage Limit`
+    * `Preferred Zone` (optional for specific storage zones)
+* **Adaptive Auto-Placement Algorithm**:
+
+  * Automatically calculates the best-fit position for each item.
+  * Prioritizes high-value items for easy access.
+  * Optimizes space usage, minimizing gaps and unused areas.
+  * Manages item expiry and usage limits, dynamically replacing expired or depleted items.
+
+---
+
+## 🚀 Advanced Algorithms and Optimization
+
+* **Real-Time 3D Spatial Optimization**:
+
+  * Uses continuously improving 3D spatial algorithms to efficiently arrange items in containers.
+  * Integrates Fast Fourier Transform (FFT) for complex placement analysis.
+* **Dynamic Placement Adjustment**:
+
+  * Adjusts item placements based on changes in priority, expiry, or other parameters.
+  * Minimizes reshuffling of existing items while maintaining efficient space utilization.
+* **Enhanced Item Prioritization**:
+
+  * Critical items are placed for easy access.
+  * Expiring items are positioned for quick replacement.
+* **Rotational Adaptation**:
+
+  * Items can be rotated to maximize space utilization.
 
 ---
 
 ## 💡 Key Features
 
-- **CSV Uploads**: Upload a list of items and containers via clean CSV formats.
-- **Custom Parameters**: Every item can have:
-  - `ID`, `Name`
-  - `Width`, `Depth`, `Height` (rotatable)
-  - `Priority (0–100)`
-  - `Expiry Date`, `Usage Limit`
-  - `Preferred Zone` (optional)
-- **Optimized Placement**:
-  - High-priority items are more accessible.
-  - Expiring items are placed where they’re easy to remove.
-  - Minimal reshuffling of existing items.
-- **Modular**:
-  - Backend handles logic and validation.
-  - Frontend stays responsive and user-friendly.
+* **CSV-Based Bulk Upload**:
+
+  * Supports uploading lists of items and containers in clean, structured CSV formats.
+* **Customizable Item Properties**:
+
+  * Every item can have unique parameters:
+
+    * `ID`, `Name`
+    * `Width`, `Depth`, `Height`
+    * `Priority (0–100)`
+    * `Expiry Date`, `Usage Limit`
+    * `Preferred Zone` (optional)
+* **Interactive User Interface**:
+
+  * Intuitive React frontend for visualizing containers, managing items, and exploring placement results.
+  * Real-time placement visualization and updates.
 
 ---
 
-## 🛠️ Tech Stack
+## ⚙️ Technical Architecture
 
-| Layer      | Tools Used                     |
-|------------|--------------------------------|
-| Frontend   | React, Tailwind CSS            |
-| Backend    | Python (Flask / FastAPI), Pandas |
-| File Input | CSV format                     |
-| Optional   | Three.js or 2D grid visualization |
-
----
-
-## 🧭 Dashboard Preview
-
-![Container Interface](screenshots/Container_Management.jpeg)
-
-![Item Management](screenshots/Items_Management.jpeg)
+| Layer         | Tools Used                       |
+| ------------- | -------------------------------- |
+| Frontend      | React, Tailwind CSS              |
+| Backend       | Python (FastAPI / Flask), Pandas |
+| File Input    | CSV format                       |
+| Visualization | Three.js (3D), 2D Grid UI        |
 
 ---
 
-## 📁 Example CSV Format
+## 📁 Example CSV Formats
 
 ### Items:
+
 ```csv
 ID,Name,Width,Depth,Height,Priority,Expiry Date,Usage Limit,Preferred Zone
 1,Tool Kit,10,10,5,90,2025-05-01,15,A
@@ -62,52 +90,63 @@ ID,Name,Width,Depth,Height,Priority,Expiry Date,Usage Limit,Preferred Zone
 3,Water Can,8,8,20,70,2025-04-20,30,C
 ```
 
+### Containers:
 
-
-### Container:
 ```csv
 Container ID,Width,Depth,Height
 C1,50,50,50
 C2,30,30,30
 ```
 
-## ⚙️ Running the App
+---
 
-***Backend Setup:***
-bash
-Copy
-Edit
+## 🚀 Setup and Installation
+
+### Backend Setup:
+
+```bash
 cd backend
 pip install -r requirements.txt
 python app.py
+```
 
-##Frontend Setup:
+### Frontend Setup:
+
+```bash
 cd frontend
 npm install
 npm start
+```
 
-Visit: http://localhost:3000 to use the UI
+* Access the app at: [http://localhost:3000](http://localhost:3000)
+
+---
 
 ## 📈 Future Plans
 
-- Real-time visualizations of container layouts
+* Enhanced 3D visualization with Three.js for better item arrangement insights.
+* Real-time algorithm adjustments based on user preferences.
+* Integration with other spacecraft systems via REST API.
 
-- Drag-and-drop manual override
+---
 
-- Sorting items based on mission phases
+## 👨‍🚀 About
 
-- REST API for integration with other spacecraft systems
+This project was initially developed as part of a space systems software design hackathon. It combines logistics management principles with zero-gravity-specific challenges, offering a robust and scalable solution for space mission resource management.
 
-## 👨‍🚀 Built By
-This project was built as part of a space systems software design Hackathon to explore smarter resource management aboard spacecraft. It blends real-world logistics principles with zero-gravity-specific constraints.
+---
 
 ## 📬 Contact
-Have ideas, suggestions, or want to collaborate?
 
-📧 danishaffan678@gmail.com
-🔗 https://www.linkedin.com/in/affan-danish-08a144353/
+For feedback, ideas, or collaboration opportunities:
 
-📄 License
-MIT License.
+* 📧 \danishaffan678@gmail.com
+* 🔗 \[[Your LinkedIn Profile]](https://www.linkedin.com/in/affan-danish-08a144353/)
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License.
 
 ### Use it, improve it, share it.
